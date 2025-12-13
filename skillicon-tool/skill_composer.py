@@ -375,14 +375,6 @@ def process_images(base_folder, skill_folder, output_folder, scale=1.0, config=N
     print(f"输出文件夹: {output_folder}")
 
 
-def create_test_data():
-    """创建测试数据"""
-    from PIL import Image, ImageDraw
-    
-    # 创建文件夹
-    os.makedirs('base', exist_ok=True)
-    os.makedirs('skill', exist_ok=True)
-
 
 def main():
     """主函数"""
