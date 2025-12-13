@@ -1,5 +1,5 @@
 # 技能图标生成工具
-by [ZhuLuOT](https://github.com/ZhuLuOT)
+***by [ZhuLuOT](https://github.com/ZhuLuOT)***
 
 ## 声明
 此处仅有脚本文件，不含其它资产。
