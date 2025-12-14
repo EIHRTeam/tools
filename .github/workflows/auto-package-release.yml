@@ -9,9 +9,9 @@ on:
   workflow_dispatch:
     inputs:
       release_body:
-        description: 'Release 内容描述 (可选)'
+        description: 'Release 内容描述 (可选，若存在模板则忽略)'
         required: false
-        default: 'Auto-generated release from GitHub Actions'
+        default: ''
 
 permissions:
   contents: write
@@ -21,146 +21,132 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. 检出代码 (设置 fetch-depth: 0 以便获取完整的 git 历史用于对比差异)
+      # 1. 检出代码（需要完整历史）
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # 2. 生成 Release 标签 (核心逻辑修改)
+      # 2. 生成 Release Tag（版本规则重构）
       - name: Generate Release Tag
         id: tag
         run: |
-          # --- 默认逻辑：使用时间戳 ---
-          DEFAULT_TAG="release-$(date +'%Y%m%d-%H%M%S')"
-          FINAL_TAG=$DEFAULT_TAG
-          IS_NEW_DIR=false
+          set -e
 
-          # --- 检测是否有新目录创建 ---
-          # 获取上一个 commit 的 hash，处理首次 commit 的情况
+          # ---------- 基础准备 ----------
+          # 处理初始提交
           if git rev-parse HEAD^ >/dev/null 2>&1; then
             PREV_COMMIT="HEAD^"
           else
-            echo "Initial commit detected, skipping diff."
-            PREV_COMMIT="4b825dc642cb6eb9a060e54bf8d69288fbee4904" # git 空树 hash
+            PREV_COMMIT="4b825dc642cb6eb9a060e54bf8d69288fbee4904"
           fi
 
-          # 获取当前存在的所有目录 (排除 .git, .github, discarded)
-          # 注意：这里只列出根目录下的文件夹名
-          CURRENT_DIRS=$(find . -maxdepth 1 -mindepth 1 -type d -not -path '*/.*' | sed 's|^\./||' | grep -v '^discarded$' | grep -v '^\.github$' | sort)
-          
-          # 获取上一个 commit 时的目录列表
-          PREV_DIRS=$(git ls-tree -d --name-only $PREV_COMMIT | grep -v '^discarded$' | grep -v '^\.github$' | sort)
+          # 当前与历史目录
+          CURRENT_DIRS=$(find . -maxdepth 1 -mindepth 1 -type d -not -path '*/.*' \
+            | sed 's|^\./||' \
+            | grep -v '^discarded$' \
+            | grep -v '^\.github$' \
+            | sort)
 
-          # 对比找出新增的目录
-          # comm -23: 只显示在 file1 (Current) 中出现但不在 file2 (Prev) 中出现的行
+          PREV_DIRS=$(git ls-tree -d --name-only $PREV_COMMIT \
+            | grep -v '^discarded$' \
+            | grep -v '^\.github$' \
+            | sort)
+
           NEW_DIRS=$(comm -23 <(echo "$CURRENT_DIRS") <(echo "$PREV_DIRS"))
 
-          if [ ! -z "$NEW_DIRS" ]; then
-            echo "检测到新目录创建: $NEW_DIRS"
-            IS_NEW_DIR=true
+          # 文件变更检测（排除目录新增）
+          CHANGED_FILES=$(git diff --name-only $PREV_COMMIT HEAD --diff-filter=AM \
+            | grep -v '^\.github/' || true)
+
+          # ---------- 获取最近版本 ----------
+          LATEST_VERSION=$(git describe --tags --match "[0-9]*.[0-9]*.[0-9]*" --abbrev=0 2>/dev/null || echo "1.0.0")
+          VERSION=${LATEST_VERSION#v}
+
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+
+          # ---------- 版本递增规则 ----------
+          if [ -n "$NEW_DIRS" ]; then
+            echo "检测到新目录：$NEW_DIRS"
+            MINOR=$((MINOR + 1))
+            PATCH=0
+          elif [ -n "$CHANGED_FILES" ]; then
+            echo "检测到文件变更"
+            PATCH=$((PATCH + 1))
           else
-            echo "未检测到新目录创建。"
+            echo "无有效变更，使用原版本号"
           fi
 
-          # --- 如果有新目录，计算版本号 ---
-          if [ "$IS_NEW_DIR" = true ]; then
-            # 获取最近的一个符合 x.y.z 格式的 tag (例如 1.0.1)
-            # 2>/dev/null 忽略没有 tag 时的报错
-            LATEST_VERSION=$(git describe --tags --match "[0-9]*.[0-9]*.[0-9]*" --abbrev=0 2>/dev/null || echo "")
+          FINAL_TAG="${MAJOR}.${MINOR}.${PATCH}"
+          echo "最终 Release Tag: $FINAL_TAG"
 
-            if [ -z "$LATEST_VERSION" ]; then
-              # 如果没有找到版本号 tag，初始化为 1.0.0
-              FINAL_TAG="1.0.0"
-            else
-              # 解析版本号 (假设格式为 X.Y.Z)
-              # 如果 tag 带 'v' 前缀 (如 v1.0.1)，这里需要去除，如果不带则直接用
-              VERSION_NO_V=${LATEST_VERSION#v}
-              
-              IFS='.' read -r -a parts <<< "$VERSION_NO_V"
-              major=${parts[0]}
-              minor=${parts[1]}
-              patch=${parts[2]}
-              
-              # Patch 版本号 +1
-              new_patch=$((patch + 1))
-              FINAL_TAG="${major}.${minor}.${new_patch}"
-            fi
-            echo "检测到新目录，切换 Release 标签为版本号模式: $FINAL_TAG"
-          fi
-
-          # 输出最终决定的 tag 到环境变量
           echo "release_tag=$FINAL_TAG" >> $GITHUB_OUTPUT
 
-      # 3. 打包所有子目录 (增加 .runtime 文件处理逻辑)
+      # 3. 打包子目录（.runtime 失败即 workflow 失败）
       - name: Zip Subdirectories
         run: |
+          set -e
+
           mkdir -p release_artifacts
 
-          # 遍历目录，增加 grep -v '^\./discarded$' 来排除 discarded 目录
-          find . -maxdepth 1 -mindepth 1 -type d -not -path '*/.*' | grep -v '^\./\.github' | grep -v '^\./discarded$' | while read dir; do
+          find . -maxdepth 1 -mindepth 1 -type d -not -path '*/.*' \
+            | grep -v '^\./\.github' \
+            | grep -v '^\./discarded$' \
+            | while read dir; do
+
             dirname=$(basename "$dir")
             echo "----------------------------------------"
-            echo "正在处理目录: $dirname"
-            
-            # --- A. 打包标准版 (仅包含仓库内的源码) ---
-            zip -r "release_artifacts/${dirname}.zip" "$dirname"
-            echo "已生成标准包: ${dirname}.zip"
+            echo "处理目录: $dirname"
 
-            # --- B. 检查 .runtime 并打包完整版 (-full) ---
+            # 标准包
+            zip -r "release_artifacts/${dirname}.zip" "$dirname"
+
+            # Full 包逻辑
             if [ -f "$dirname/.runtime" ]; then
-              echo "发现 .runtime 配置文件，开始构建 Full 包..."
-              
-              # 1. 创建临时构建区，保持解压后的目录名一致
+              echo "发现 .runtime，构建 Full 包"
+
               TEMP_ROOT="temp_full_build"
               rm -rf "$TEMP_ROOT"
               mkdir -p "$TEMP_ROOT/$dirname"
-              
-              # 2. 复制源码到临时目录
+
               cp -r "$dirname/"* "$TEMP_ROOT/$dirname/"
-              
-              # 3. 读取 .runtime 并下载文件
-              # 使用 tr -d '\r' 移除可能的 Windows 回车符
-              # 跳过空行和注释行
+
               grep -v '^#' "$dirname/.runtime" | grep -v '^\s*$' | tr -d '\r' | while read -r url; do
-                if [ ! -z "$url" ]; then
-                  filename=$(basename "$url")
-                  echo "  -> 正在下载外部依赖: $filename"
-                  # 使用 curl 下载，-L 跟随重定向，-sS 显示错误但不显示进度条，-f 失败时报错
-                  if curl -L -sS -f -o "$TEMP_ROOT/$dirname/$filename" "$url"; then
-                    echo "     下载成功"
-                  else
-                    echo "     [警告] 下载失败: $url"
-                  fi
-                fi
+                filename=$(basename "$url")
+                echo "下载依赖: $filename"
+
+                curl -L -sS -f -o "$TEMP_ROOT/$dirname/$filename" "$url"
               done
 
-              # 4. 打包 Full 版本
-              # 进入临时目录的根部进行压缩，确保 zip 包内的顶层文件夹仍是 dirname
               pushd "$TEMP_ROOT" > /dev/null
               zip -r "../release_artifacts/${dirname}-full.zip" "$dirname"
               popd > /dev/null
-              
-              # 5. 清理临时目录
+
               rm -rf "$TEMP_ROOT"
-              echo "已生成完整包: ${dirname}-full.zip"
-            else
-              echo "未发现 .runtime 文件，跳过 Full 包构建。"
             fi
-            
           done
 
-          echo "----------------------------------------"
-          echo "所有打包任务完成，准备发布..."
+          echo "打包完成"
           ls -l release_artifacts/
 
-      # 4. 创建 Release 并上传文件
+      # 4. 创建 Release（使用模板）
+      - name: Load Release Template
+        id: release_body
+        run: |
+          if [ -f ".github/release-template.md" ]; then
+            echo "body<<EOF" >> $GITHUB_OUTPUT
+            cat .github/release-template.md >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "body=Auto-generated release." >> $GITHUB_OUTPUT
+          fi
+
       - name: Create Release and Upload Assets
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ steps.tag.outputs.release_tag }}
           name: Release ${{ steps.tag.outputs.release_tag }}
-          body: ${{ github.event.inputs.release_body || 'Auto-packaged release.' }}
+          body: ${{ steps.release_body.outputs.body }}
           draft: false
           prerelease: false
           files: release_artifacts/*.zip
