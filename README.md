@@ -1,5 +1,5 @@
 # tools
-[![Auto Zip Subdirectories and Release](https://github.com/EIHRTeam/tools/actions/workflows/auto-package-release.yml/badge.svg)](https://github.com/EIHRTeam/tools/actions/workflows/auto-package-release.yml)<br>
+[![Auto Release](https://github.com/EIHRTeam/tools/actions/workflows/auto-package-release.yml/badge.svg)](https://github.com/EIHRTeam/tools/actions/workflows/auto-package-release.yml)<br>
 一些神奇妙妙小工具
 
 ## 下载
