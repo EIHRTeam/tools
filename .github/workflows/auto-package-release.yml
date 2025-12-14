@@ -92,7 +92,7 @@ jobs:
           # 输出最终决定的 tag 到环境变量
           echo "release_tag=$FINAL_TAG" >> $GITHUB_OUTPUT
 
-      # 3. 打包所有子目录
+      # 3. 打包所有子目录 (增加 .runtime 文件处理逻辑)
       - name: Zip Subdirectories
         run: |
           mkdir -p release_artifacts
@@ -100,11 +100,58 @@ jobs:
           # 遍历目录，增加 grep -v '^\./discarded$' 来排除 discarded 目录
           find . -maxdepth 1 -mindepth 1 -type d -not -path '*/.*' | grep -v '^\./\.github' | grep -v '^\./discarded$' | while read dir; do
             dirname=$(basename "$dir")
-            echo "正在打包目录: $dirname"
+            echo "----------------------------------------"
+            echo "正在处理目录: $dirname"
+            
+            # --- A. 打包标准版 (仅包含仓库内的源码) ---
             zip -r "release_artifacts/${dirname}.zip" "$dirname"
+            echo "已生成标准包: ${dirname}.zip"
+
+            # --- B. 检查 .runtime 并打包完整版 (-full) ---
+            if [ -f "$dirname/.runtime" ]; then
+              echo "发现 .runtime 配置文件，开始构建 Full 包..."
+              
+              # 1. 创建临时构建区，保持解压后的目录名一致
+              TEMP_ROOT="temp_full_build"
+              rm -rf "$TEMP_ROOT"
+              mkdir -p "$TEMP_ROOT/$dirname"
+              
+              # 2. 复制源码到临时目录
+              cp -r "$dirname/"* "$TEMP_ROOT/$dirname/"
+              
+              # 3. 读取 .runtime 并下载文件
+              # 使用 tr -d '\r' 移除可能的 Windows 回车符
+              # 跳过空行和注释行
+              grep -v '^#' "$dirname/.runtime" | grep -v '^\s*$' | tr -d '\r' | while read -r url; do
+                if [ ! -z "$url" ]; then
+                  filename=$(basename "$url")
+                  echo "  -> 正在下载外部依赖: $filename"
+                  # 使用 curl 下载，-L 跟随重定向，-sS 显示错误但不显示进度条，-f 失败时报错
+                  if curl -L -sS -f -o "$TEMP_ROOT/$dirname/$filename" "$url"; then
+                    echo "     下载成功"
+                  else
+                    echo "     [警告] 下载失败: $url"
+                  fi
+                fi
+              done
+
+              # 4. 打包 Full 版本
+              # 进入临时目录的根部进行压缩，确保 zip 包内的顶层文件夹仍是 dirname
+              pushd "$TEMP_ROOT" > /dev/null
+              zip -r "../release_artifacts/${dirname}-full.zip" "$dirname"
+              popd > /dev/null
+              
+              # 5. 清理临时目录
+              rm -rf "$TEMP_ROOT"
+              echo "已生成完整包: ${dirname}-full.zip"
+            else
+              echo "未发现 .runtime 文件，跳过 Full 包构建。"
+            fi
+            
           done
 
-          echo "打包完成，准备发布..."
+          echo "----------------------------------------"
+          echo "所有打包任务完成，准备发布..."
           ls -l release_artifacts/
 
       # 4. 创建 Release 并上传文件
