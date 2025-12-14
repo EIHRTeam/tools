@@ -33,19 +33,19 @@ pip install pyqt6
 pip install PyQt6 -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
-# 第二步：解压并放置 FFmpeg 文件
+# 第二步：从 Release 下载并解压
 
-解压 ffmpeg.7z 文件，你会得到三个文件
+从 Release 下载 video-converter-python-full.zip
 
-将这三个文件与 main.py 放在同一个文件夹中
+[点此下载](https://github.com/EIHRTeam/tools/releases/latest/download/video-converter-python-full.zip)
 
-正确的文件夹目录结构应该如下所示：
+解压 video-converter-python-full.zip，正确的文件夹目录结构应该如下所示：
 
 ```
 你的项目文件夹/
 ├── main.py
-├── ffmpeg.exe        (或 ffmpeg 可执行文件)
-└── requirements.txt  (无需使用)
+├── ffmpeg.exe
+└── requirements.txt
 ```
 
 # 第三步：运行程序
@@ -55,14 +55,6 @@ pip install PyQt6 -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```bash
 python main.py
 ```
-
-## 使用说明
-
-确保已安装 PyQt6 库
-
-确保 FFmpeg 的三个文件已正确解压并与 main.py 在同一文件夹
-
-运行 main.py 启动图形界面程序
 
 ## 注意事项
 
