@@ -124,7 +124,7 @@ Error: Command failed: ffmpeg...
 ⚙️ 高级配置
 
 修改默认设置
-在 `backend.js` 中可修改：
+在 `app.js` 中可修改：
 
 ```javascript
 // 修改文件大小限制（默认20MB）
@@ -162,7 +162,7 @@ setInterval(() => {
 1. ✅ 检查FFmpeg是否安装：`ffmpeg -version`
 2. ✅ 检查Node.js版本：`node --version`（需要16+）
 3. ✅ 检查端口是否占用：尝试端口3002或3003
-4. ✅ 重启服务：关闭并重新运行 `node backend.js`
+4. ✅ 重启服务：关闭并重新运行 `node app.js`
 5. ✅ 检查视频文件：尝试其他视频文件测试
 6. ✅ 查看控制台：浏览器按F12查看控制台错误信息
 7. ✅ 查看终端：后端运行终端会显示详细错误信息
@@ -172,7 +172,7 @@ setInterval(() => {
 ```
 神奇妙妙小工具/
 ├── index.html          # 前端界面
-├── backend.js          # 后端服务器
+├── app.js          # 后端服务器
 ├── uploads/            # 上传文件临时目录（自动创建）
 ├── converted_*.gif     # 转换输出文件
 ├── converted_*.webp    # 转换输出文件
