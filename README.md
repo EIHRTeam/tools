@@ -1,5 +1,11 @@
+# tools
+一些神奇妙妙小工具
 
-### 一些神奇妙妙小工具<br>
+## 下载
+> [!NOTE]
+> 我们建议您直接从 Release 下载工具。
+
+前往 Release：[点此前往](https://github.com/EIHRTeam/tools/releases/latest/)
 
 ## 工具列表
 
