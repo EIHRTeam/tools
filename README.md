@@ -1,5 +1,5 @@
-<img width="1336" height="470" alt="image" src="https://github.com/user-attachments/assets/9254b11e-cb7b-4b4f-8a6d-ef1fd7e34aab" /># tools
-一些神奇妙妙小工具<br>
+
+<br>一些神奇妙妙小工具<br>
 
 ## 工具列表
 
@@ -19,4 +19,4 @@ AKA 批量图片尺寸转换工具<br>
 由 [oculto](https://github.com/oculto-link) 编写。
 
 ## 一些说明
-使用中如遇任何问题，请先仔细阅读对应工具的 README 文件。若您确信遇到了 bug，或您认为某小工具的程序设计有问题，亦或您希望某小工具的功能得到增强，欢迎您提交 [Issue](https://github.com/EIHRTeam/tools/issue/new) 或 [Pull Request](https://github.com/EIHRTeam/tools/pulls) 。
+使用中如遇任何问题，请先仔细阅读对应工具的 README 文件。若您确信遇到了 bug，或您认为某小工具的程序设计有问题，亦或您希望某小工具的功能得到增强，欢迎您提交 [Issue](https://github.com/EIHRTeam/tools/issues/new) 或 [Pull Request](https://github.com/EIHRTeam/tools/pulls) 。
