@@ -1,0 +1,1651 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>神奇妙妙小工具</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a3a, #2c3e50);
+            color: #ecf0f1;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(30, 40, 50, 0.8);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #bdc3c7;
+            margin-bottom: 5px;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        @media (max-width: 1100px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .section {
+            background: rgba(30, 40, 50, 0.8);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #3498db;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        
+        .section-title i {
+            font-size: 1.8rem;
+        }
+        
+        /* 上传区域样式 */
+        .upload-area {
+            border: 3px dashed #3498db;
+            border-radius: 10px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .upload-area:hover {
+            background: rgba(52, 152, 219, 0.1);
+            border-color: #2ecc71;
+        }
+        
+        .upload-area i {
+            font-size: 4rem;
+            color: #3498db;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+        
+        .upload-area:hover i {
+            transform: translateY(-5px);
+            color: #2ecc71;
+        }
+        
+        .upload-area p {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .file-info {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(52, 152, 219, 0.1);
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+        
+        /* 视频预览区域 */
+        .video-preview-container {
+            width: 100%;
+            margin-top: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            position: relative;
+            background: #000;
+            min-height: 300px;
+        }
+        
+        #videoElement {
+            width: 100%;
+            max-height: 400px;
+            display: none;
+        }
+        
+        .video-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #bdc3c7;
+            font-size: 1.2rem;
+        }
+        
+        .video-placeholder i {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            color: #3498db;
+        }
+        
+        /* 视频控制区域 */
+        .video-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .video-time-btn {
+            padding: 10px 20px;
+            background: #3498db;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: bold;
+        }
+        
+        .video-time-btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .video-time-btn:active {
+            transform: translateY(0);
+        }
+        
+        .video-time-btn.frame-btn {
+            background: #2ecc71;
+        }
+        
+        .video-time-btn.frame-btn:hover {
+            background: #27ae60;
+        }
+        
+        /* 时间显示区域 */
+        .current-time {
+            font-size: 1.2rem;
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+            color: #ecf0f1;
+            background: rgba(44, 62, 80, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        .time-markers {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            background: rgba(44, 62, 80, 0.5);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .marker {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .marker-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2ecc71;
+            margin-bottom: 5px;
+            min-height: 2rem;
+        }
+        
+        .marker-label {
+            font-size: 1.1rem;
+            color: #bdc3c7;
+        }
+        
+        /* 设置区域样式 */
+        .option-group {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(44, 62, 80, 0.5);
+            border-radius: 10px;
+        }
+        
+        .option-title {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: #f1c40f;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .option-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .option-row label {
+            min-width: 160px;
+            font-size: 1.1rem;
+        }
+        
+        .slider-with-value {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .slider {
+            flex: 1;
+            height: 12px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #34495e;
+            border-radius: 5px;
+            outline: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #3498db;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            border: 3px solid #2c3e50;
+        }
+        
+        .slider::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #3498db;
+            cursor: pointer;
+            border: 3px solid #2c3e50;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        
+        .slider-value {
+            min-width: 70px;
+            text-align: center;
+            font-weight: bold;
+            color: #2ecc71;
+            font-size: 1.3rem;
+            padding: 5px 10px;
+            background: rgba(44, 62, 80, 0.8);
+            border-radius: 8px;
+        }
+        
+        /* 质量指示器 */
+        .quality-indicator {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(44, 62, 80, 0.3);
+            border-radius: 8px;
+        }
+        
+        .quality-levels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+        
+        .quality-bar {
+            height: 8px;
+            background: linear-gradient(90deg, #e74c3c, #f39c12, #2ecc71);
+            border-radius: 4px;
+            position: relative;
+            margin-top: 10px;
+        }
+        
+        .quality-marker {
+            position: absolute;
+            top: -6px;
+            width: 4px;
+            height: 20px;
+            background: white;
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+        
+        /* 格式选择 */
+        .format-buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .format-btn {
+            flex: 1;
+            padding: 15px;
+            background: #34495e;
+            border: none;
+            border-radius: 8px;
+            color: #ecf0f1;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-weight: bold;
+        }
+        
+        .format-btn:hover {
+            background: #3d566e;
+            transform: translateY(-2px);
+        }
+        
+        .format-btn.active {
+            background: #3498db;
+            color: white;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+        }
+        
+        /* 输入框样式 */
+        .text-input {
+            flex: 1;
+            padding: 12px 15px;
+            background: #34495e;
+            border: 2px solid #3498db;
+            border-radius: 8px;
+            color: #ecf0f1;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .text-input:focus {
+            outline: none;
+            border-color: #2ecc71;
+            box-shadow: 0 0 10px rgba(46, 204, 113, 0.3);
+        }
+        
+        .number-input {
+            width: 120px;
+            padding: 12px 15px;
+            background: #34495e;
+            border: 2px solid #3498db;
+            border-radius: 8px;
+            color: #ecf0f1;
+            font-size: 1rem;
+            text-align: center;
+        }
+        
+        /* 转换按钮 */
+        .convert-btn {
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1.4rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .convert-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(90deg, #2ecc71, #3498db);
+        }
+        
+        .convert-btn:active {
+            transform: translateY(-2px);
+        }
+        
+        .convert-btn:disabled {
+            background: #7f8c8d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        /* 进度条 */
+        .progress-bar-container {
+            width: 100%;
+            background: #34495e;
+            border-radius: 10px;
+            margin-top: 20px;
+            overflow: hidden;
+            display: none;
+            height: 30px;
+        }
+        
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            border-radius: 10px;
+            transition: width 0.5s;
+            text-align: center;
+            line-height: 30px;
+            color: white;
+            font-weight: bold;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(255, 255, 255, 0.2) 50%, 
+                transparent 100%);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        /* 处理中状态 */
+        .processing {
+            display: none;
+            text-align: center;
+            margin-top: 30px;
+            padding: 30px;
+            background: rgba(44, 62, 80, 0.5);
+            border-radius: 15px;
+        }
+        
+        .spinner {
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top: 5px solid #3498db;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 输出区域 */
+        .output-preview {
+            text-align: center;
+            margin-top: 25px;
+            min-height: 350px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 2px dashed #34495e;
+            border-radius: 15px;
+            padding: 30px;
+            background: rgba(44, 62, 80, 0.3);
+        }
+        
+        #outputImage {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: none;
+        }
+        
+        .output-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .output-placeholder i {
+            font-size: 5rem;
+            color: #3498db;
+        }
+        
+        /* 输出信息 */
+        .output-info {
+            margin-top: 25px;
+            padding: 20px;
+            background: rgba(44, 62, 80, 0.7);
+            border-radius: 15px;
+            width: 100%;
+        }
+        
+        .output-info p {
+            margin: 15px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.1rem;
+        }
+        
+        .output-info span.value {
+            color: #2ecc71;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        /* 大小警告 */
+        .size-warning {
+            color: #e74c3c;
+            font-weight: bold;
+            margin-top: 15px;
+            display: none;
+            align-items: center;
+            gap: 15px;
+            justify-content: center;
+            padding: 15px;
+            background: rgba(231, 76, 60, 0.1);
+            border-radius: 10px;
+            border: 2px solid #e74c3c;
+        }
+        
+        /* 下载按钮 */
+        .download-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(90deg, #2ecc71, #3498db);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1.3rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 25px;
+            text-decoration: none;
+            text-align: center;
+            display: none;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+        }
+        
+        /* 信息文本 */
+        .info-text {
+            color: #bdc3c7;
+            font-size: 0.95rem;
+            margin-top: 10px;
+            line-height: 1.5;
+            padding: 10px;
+            background: rgba(44, 62, 80, 0.3);
+            border-radius: 8px;
+        }
+        
+        /* 说明区域 */
+        .instructions {
+            margin-top: 40px;
+            background: rgba(30, 40, 50, 0.8);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .instructions h3 {
+            color: #f1c40f;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .instructions ol {
+            padding-left: 25px;
+            line-height: 1.8;
+        }
+        
+        .instructions li {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+        
+        .instructions li strong {
+            color: #2ecc71;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .main-content {
+                gap: 20px;
+            }
+            
+            .section {
+                padding: 20px;
+            }
+            
+            .option-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .slider-with-value {
+                width: 100%;
+            }
+            
+            .video-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .video-time-btn {
+                justify-content: center;
+            }
+            
+            .time-markers {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .format-buttons {
+                flex-direction: column;
+            }
+        }
+        
+        /* 工具提示 */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            text-align: center;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.9rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        /* 文件大小估算 */
+        .size-estimate {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(44, 62, 80, 0.5);
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+        
+        .size-estimate span {
+            color: #2ecc71;
+            font-weight: bold;
+        }
+        
+        /* 估算值提示 */
+        .estimate-note {
+            font-size: 0.8rem;
+            color: #f39c12;
+            margin-top: 5px;
+            font-style: italic;
+        }
+        
+        /* 系统信息区域 */
+        .system-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(30, 40, 50, 0.6);
+            border-radius: 10px;
+            font-size: 0.9rem;
+            color: #bdc3c7;
+            display: none;
+        }
+        
+        .system-info h4 {
+            color: #3498db;
+            margin-bottom: 10px;
+        }
+        
+        .system-info p {
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-video"></i> 神奇妙妙小工具</h1>
+            <p class="subtitle">支持视频与GIF/WebP转换，by oculto</p>
+            <p class="subtitle">毫秒级时间选择 • 可调节质量 • 自定义文件名 • 咕咕嘎嘎 • 自动清理临时文件</p>
+        </header>
+        
+        <div class="main-content">
+            <!-- 上传与预览区 -->
+            <div class="section">
+                <h2 class="section-title"><i class="fas fa-upload"></i> 视频上传与预览</h2>
+                
+                <div class="upload-area" id="uploadArea">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p><strong>点击或拖拽视频文件到此处上传</strong></p>
+                    <p>支持 MP4, AVI, MOV, WebM 等常见视频格式</p>
+                    <p>最大文件大小: 100MB</p>
+                    <div id="fileInfo" class="file-info" style="display: none;">
+                        <p><i class="fas fa-file-video"></i> <span id="fileName">未选择文件</span></p>
+                        <p><i class="fas fa-hdd"></i> <span id="fileSize">0 MB</span></p>
+                    </div>
+                </div>
+                <input type="file" id="videoInput" accept="video/*" hidden>
+                
+                <div class="video-preview-container">
+                    <video id="videoElement" controls></video>
+                    <div class="video-placeholder" id="videoPlaceholder">
+                        <i class="fas fa-video"></i>
+                        <p>视频预览将在这里显示</p>
+                        <p>请先上传视频文件</p>
+                    </div>
+                </div>
+                
+                <div class="current-time" id="currentTimeDisplay" style="display: none;">
+                    当前时间: <span id="currentTime">0:00.000</span>
+                </div>
+                
+                <div class="video-controls">
+                    <button class="video-time-btn" id="markStartBtn">
+                        <i class="fas fa-flag"></i> 标记开始点
+                    </button>
+                    <button class="video-time-btn" id="markEndBtn">
+                        <i class="fas fa-flag-checkered"></i> 标记结束点
+                    </button>
+                    <button class="video-time-btn frame-btn" id="prevFrameBtn" disabled>
+                        <i class="fas fa-step-backward"></i> 前一帧
+                    </button>
+                    <button class="video-time-btn frame-btn" id="nextFrameBtn" disabled>
+                        <i class="fas fa-step-forward"></i> 后一帧
+                    </button>
+                </div>
+                
+                <div class="time-markers">
+                    <div class="marker">
+                        <div class="marker-label">开始时间</div>
+                        <div class="marker-value" id="startTimeMarker">0:00.000</div>
+                    </div>
+                    <div class="marker">
+                        <div class="marker-label">结束时间</div>
+                        <div class="marker-value" id="endTimeMarker">0:00.000</div>
+                    </div>
+                    <div class="marker">
+                        <div class="marker-label">选中时长</div>
+                        <div class="marker-value" id="durationMarker">0.000秒</div>
+                    </div>
+                </div>
+                
+                <!-- 系统信息区域 -->
+                <div class="system-info" id="systemInfo">
+                    <h4><i class="fas fa-server"></i> 系统状态</h4>
+                    <p>临时文件清理: <span id="cleanupStatus">未启动</span></p>
+                    <p>上传文件夹: <span id="uploadFolderStatus">--</span></p>
+                    <button id="refreshSystemInfo" style="margin-top: 10px; padding: 5px 10px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        <i class="fas fa-sync-alt"></i> 刷新状态
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 设置区 -->
+            <div class="section">
+                <h2 class="section-title"><i class="fas fa-sliders-h"></i> 转换设置</h2>
+                
+                <div class="option-group">
+                    <div class="option-title"><i class="fas fa-film"></i> 渐入渐出效果</div>
+                    <div class="option-row">
+                        <label>渐入帧数:</label>
+                        <div class="slider-with-value">
+                            <input type="range" min="0" max="30" value="10" class="slider" id="fadeInSlider">
+                            <span class="slider-value" id="fadeInValue">10</span>
+                        </div>
+                    </div>
+                    <div class="option-row">
+                        <label>渐出帧数:</label>
+                        <div class="slider-with-value">
+                            <input type="range" min="0" max="30" value="10" class="slider" id="fadeOutSlider">
+                            <span class="slider-value" id="fadeOutValue">10</span>
+                        </div>
+                    </div>
+                    <p class="info-text">
+                        <i class="fas fa-info-circle"></i> 提示: 假设视频帧率为30fps，10帧 ≈ 0.033秒。渐入渐出效果可以使转换更平滑。
+                    </p>
+                </div>
+                
+                <div class="option-group">
+                    <div class="option-title"><i class="fas fa-image"></i> 输出质量设置</div>
+                    <div class="option-row">
+                        <label>质量等级 (1-100):</label>
+                        <div class="slider-with-value">
+                            <input type="range" min="1" max="100" value="80" class="slider" id="qualitySlider">
+                            <span class="slider-value" id="qualityValue">80</span>
+                        </div>
+                    </div>
+                    
+                    <div class="quality-indicator">
+                        <div class="quality-levels">
+                            <span style="color: #e74c3c;">低质量 (1-30)</span>
+                            <span style="color: #f39c12;">中等 (31-70)</span>
+                            <span style="color: #2ecc71;">高质量 (71-100)</span>
+                        </div>
+                        <div class="quality-bar">
+                            <div class="quality-marker" id="qualityMarker"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="size-estimate">
+                        <i class="fas fa-weight-hanging"></i> 预计文件大小: <span id="sizeEstimate">--</span>
+                        <span id="sizeWarningText" style="color: #f39c12; display: none;"> (接近20MB限制)</span>
+                        <div class="estimate-note" id="sizeEstimateWarning"></div>
+                    </div>
+                    
+                    <p class="info-text">
+                        <i class="fas fa-info-circle"></i> 质量越高文件越清晰，但文件大小也会增加。建议根据需求选择合适质量。
+                    </p>
+                </div>
+                
+                <div class="option-group">
+                    <div class="option-title"><i class="fas fa-file-export"></i> 输出格式与文件名</div>
+                    
+                    <div class="format-buttons">
+                        <button class="format-btn active" id="formatGif">
+                            <i class="fas fa-film"></i> GIF 格式
+                        </button>
+                        <button class="format-btn" id="formatWebp">
+                            <i class="fas fa-image"></i> WebP 格式
+                        </button>
+                    </div>
+                    
+                    <div class="option-row">
+                        <label>输出尺寸:</label>
+                        <input type="text" class="number-input" value="800" id="widthInput" readonly>
+                        <span>×</span>
+                        <input type="text" class="number-input" value="450" id="heightInput" readonly>
+                    </div>
+                    
+                    <div class="option-row">
+                        <label>自定义文件名:</label>
+                        <input type="text" class="text-input" id="filenameInput" placeholder="例如: 我的视频片段">
+                        <div class="tooltip">
+                            <i class="fas fa-question-circle" style="color: #3498db;"></i>
+                            <span class="tooltip-text">自定义输出文件名，无需包含扩展名。留空将使用默认名称。</span>
+                        </div>
+                    </div>
+                    
+                    <p class="info-text">
+                        <i class="fas fa-info-circle"></i> 文件名不要包含扩展名，程序会自动添加 .gif 或 .webp。推荐使用英文或数字文件名。
+                    </p>
+                </div>
+                
+                <div class="option-group">
+                    <div class="option-title"><i class="fas fa-info-circle"></i> 文件大小限制</div>
+                    <div class="option-row">
+                        <label>最大文件大小:</label>
+                        <input type="text" class="number-input" value="20" id="maxSizeInput" readonly>
+                        <span>MB</span>
+                    </div>
+                    <p class="info-text" id="sizeLimitInfo">
+                        <i class="fas fa-exclamation-triangle"></i> 转换后的文件不能超过20MB。如果超过限制，程序会自动优化以减小文件大小。
+                    </p>
+                </div>
+                
+                <div class="progress-bar-container" id="progressContainer">
+                    <div class="progress-bar" id="progressBar">0%</div>
+                </div>
+                
+                <button class="convert-btn" id="convertBtn" disabled>
+                    <i class="fas fa-cogs"></i> 开始高质量转换
+                </button>
+                
+                <div class="processing" id="processing">
+                    <div class="spinner"></div>
+                    <p><strong>正在处理视频，请稍候...</strong></p>
+                    <p id="processingDetails">处理进度: 0%</p>
+                    <p style="color: #bdc3c7; margin-top: 15px;">
+                        这可能需要一些时间，取决于视频长度和质量设置。
+                    </p>
+                </div>
+            </div>
+            
+            <!-- 输出区 -->
+            <div class="section">
+                <h2 class="section-title"><i class="fas fa-download"></i> 输出结果</h2>
+                
+                <div class="output-preview">
+                    <img id="outputImage" alt="转换结果预览">
+                    <div class="output-placeholder" id="outputPlaceholder">
+                        <i class="fas fa-images"></i>
+                        <p><strong>转换结果将在这里显示</strong></p>
+                        <p style="color: #bdc3c7;">完成转换后，您可以在这里预览并下载文件</p>
+                    </div>
+                </div>
+                
+                <div class="output-info">
+                    <p>输出格式: <span class="value" id="outputFormat">GIF</span></p>
+                    <p>文件大小: <span class="value" id="outputSize">0 KB</span></p>
+                    <p>输出尺寸: <span class="value" id="outputDimensions">800 × 450</span></p>
+                    <p>质量等级: <span class="value" id="outputQuality">80</span></p>
+                    <p>渐入渐出: <span class="value" id="outputFade">10帧/10帧</span></p>
+                </div>
+                
+                <div class="size-warning" id="sizeWarning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    文件大小超过20MB限制，已自动优化。如需更高质量，请缩短片段时长或降低质量设置。
+                </div>
+                
+                <a class="download-btn" id="downloadBtn" download="converted.gif">
+                    <i class="fas fa-file-download"></i> 下载转换文件
+                </a>
+                
+                <!-- 清理按钮 -->
+                <button class="convert-btn" id="cleanupBtn" style="background: linear-gradient(90deg, #e74c3c, #f39c12); margin-top: 15px;">
+                    <i class="fas fa-trash-alt"></i> 清理临时文件
+                </button>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h3><i class="fas fa-info-circle"></i> 使用说明</h3>
+            <ol>
+                <li><strong>上传视频</strong>：点击上传区域或拖拽视频文件到上传区域</li>
+                <li><strong>预览与标记</strong>：播放视频，在需要的位置点击"标记开始点"和"标记结束点"按钮</li>
+                <li><strong>精确调整</strong>：使用"前一帧"和"后一帧"按钮进行毫秒级精确调整</li>
+                <li><strong>设置效果</strong>：调节渐入渐出效果的帧数（默认10帧 ≈ 0.33秒）</li>
+                <li><strong>质量调节</strong>：使用1-100滑块选择输出质量（数值越大质量越高）</li>
+                <li><strong>格式选择</strong>：选择输出格式（GIF或WebP）</li>
+                <li><strong>自定义文件名</strong>：输入自定义文件名（可选）</li>
+                <li><strong>开始转换</strong>：点击"开始高质量转换"按钮进行处理</li>
+                <li><strong>下载文件</strong>：转换完成后，预览结果并下载文件</li>
+                <li><strong>清理临时文件</strong>：定期使用"清理临时文件"按钮保持系统整洁</li>
+                <li><strong>注意事项</strong>：转换后的文件大小不能超过20MB，否则会自动优化</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- 使用CDN的Font Awesome -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    
+    <!-- 前端JavaScript -->
+    <script>
+        // ==================== 全局变量 ====================
+        // DOM元素
+        const videoElement = document.getElementById('videoElement');
+        const videoInput = document.getElementById('videoInput');
+        const uploadArea = document.getElementById('uploadArea');
+        const convertBtn = document.getElementById('convertBtn');
+        const outputImage = document.getElementById('outputImage');
+        const outputPlaceholder = document.getElementById('outputPlaceholder');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const processing = document.getElementById('processing');
+        const processingDetails = document.getElementById('processingDetails');
+        const sizeWarning = document.getElementById('sizeWarning');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const cleanupBtn = document.getElementById('cleanupBtn');
+        const systemInfo = document.getElementById('systemInfo');
+        const cleanupStatus = document.getElementById('cleanupStatus');
+        const uploadFolderStatus = document.getElementById('uploadFolderStatus');
+        const refreshSystemInfo = document.getElementById('refreshSystemInfo');
+        
+        // 时间控制相关元素
+        const currentTimeDisplay = document.getElementById('currentTimeDisplay');
+        const currentTime = document.getElementById('currentTime');
+        const markStartBtn = document.getElementById('markStartBtn');
+        const markEndBtn = document.getElementById('markEndBtn');
+        const prevFrameBtn = document.getElementById('prevFrameBtn');
+        const nextFrameBtn = document.getElementById('nextFrameBtn');
+        const startTimeMarker = document.getElementById('startTimeMarker');
+        const endTimeMarker = document.getElementById('endTimeMarker');
+        const durationMarker = document.getElementById('durationMarker');
+        
+        // 设置相关元素
+        const fadeInSlider = document.getElementById('fadeInSlider');
+        const fadeOutSlider = document.getElementById('fadeOutSlider');
+        const fadeInValue = document.getElementById('fadeInValue');
+        const fadeOutValue = document.getElementById('fadeOutValue');
+        const qualitySlider = document.getElementById('qualitySlider');
+        const qualityValue = document.getElementById('qualityValue');
+        const qualityMarker = document.getElementById('qualityMarker');
+        const formatGif = document.getElementById('formatGif');
+        const formatWebp = document.getElementById('formatWebp');
+        const filenameInput = document.getElementById('filenameInput');
+        
+        // 输出信息元素
+        const outputFormat = document.getElementById('outputFormat');
+        const outputSize = document.getElementById('outputSize');
+        const outputDimensions = document.getElementById('outputDimensions');
+        const outputQuality = document.getElementById('outputQuality');
+        const outputFade = document.getElementById('outputFade');
+        const sizeEstimate = document.getElementById('sizeEstimate');
+        const sizeWarningText = document.getElementById('sizeWarningText');
+        const sizeEstimateWarning = document.getElementById('sizeEstimateWarning');
+        
+        // 用户设置
+        const settings = {
+            fadeInFrames: 10,
+            fadeOutFrames: 10,
+            quality: 80, // 1-100
+            format: 'gif', // 'gif', 'webp'
+            width: 800,
+            height: 450,
+            maxSize: 20 * 1024 * 1024, // 20MB
+            customFilename: ''
+        };
+        
+        // 视频相关变量
+        let videoDuration = 0;
+        let videoFrameRate = 30;
+        let startTime = 0;
+        let endTime = 0;
+        let isVideoLoaded = false;
+        let videoFile = null;
+        let videoFileName = '';
+        let videoFileSize = 0;
+        
+        // ==================== 初始化函数 ====================
+        function init() {
+            // 初始化事件监听器
+            setupEventListeners();
+            
+            // 初始化显示
+            updateFadeDisplay();
+            updateQualityDisplay();
+            updateSizeEstimate();
+            
+            // 隐藏处理中和进度条
+            processing.style.display = 'none';
+            progressContainer.style.display = 'none';
+            
+            // 更新系统信息
+            updateSystemInfo();
+            
+            console.log('视频转换器前端初始化完成');
+        }
+        
+        // ==================== 事件监听器设置 ====================
+        function setupEventListeners() {
+            // 上传区域事件
+            uploadArea.addEventListener('click', () => videoInput.click());
+            uploadArea.addEventListener('dragover', handleDragOver);
+            uploadArea.addEventListener('dragleave', handleDragLeave);
+            uploadArea.addEventListener('drop', handleDrop);
+            
+            // 文件输入事件
+            videoInput.addEventListener('change', handleFileSelect);
+            
+            // 视频事件
+            videoElement.addEventListener('timeupdate', updateCurrentTime);
+            videoElement.addEventListener('loadedmetadata', onVideoLoaded);
+            
+            // 时间标记按钮
+            markStartBtn.addEventListener('click', () => markTime('start'));
+            markEndBtn.addEventListener('click', () => markTime('end'));
+            
+            // 帧控制按钮
+            prevFrameBtn.addEventListener('click', () => moveFrame(-1));
+            nextFrameBtn.addEventListener('click', () => moveFrame(1));
+            
+            // 滑块事件
+            fadeInSlider.addEventListener('input', () => {
+                settings.fadeInFrames = parseInt(fadeInSlider.value);
+                fadeInValue.textContent = settings.fadeInFrames;
+                updateFadeDisplay();
+                updateSizeEstimate();
+            });
+            
+            fadeOutSlider.addEventListener('input', () => {
+                settings.fadeOutFrames = parseInt(fadeOutSlider.value);
+                fadeOutValue.textContent = settings.fadeOutFrames;
+                updateFadeDisplay();
+                updateSizeEstimate();
+            });
+            
+            qualitySlider.addEventListener('input', () => {
+                settings.quality = parseInt(qualitySlider.value);
+                qualityValue.textContent = settings.quality;
+                updateQualityDisplay();
+                updateSizeEstimate();
+            });
+            
+            // 格式选择按钮
+            formatGif.addEventListener('click', () => setFormat('gif'));
+            formatWebp.addEventListener('click', () => setFormat('webp'));
+            
+            // 文件名输入
+            filenameInput.addEventListener('input', () => {
+                settings.customFilename = filenameInput.value.trim();
+            });
+            
+            // 转换按钮
+            convertBtn.addEventListener('click', convertVideo);
+            
+            // 清理按钮
+            cleanupBtn.addEventListener('click', cleanupTempFiles);
+            
+            // 刷新系统信息按钮
+            refreshSystemInfo.addEventListener('click', updateSystemInfo);
+        }
+        
+        // ==================== 文件处理函数 ====================
+        function handleDragOver(e) {
+            e.preventDefault();
+            uploadArea.style.background = 'rgba(52, 152, 219, 0.2)';
+            uploadArea.style.borderColor = '#2ecc71';
+        }
+        
+        function handleDragLeave() {
+            uploadArea.style.background = '';
+            uploadArea.style.borderColor = '#3498db';
+        }
+        
+        function handleDrop(e) {
+            e.preventDefault();
+            uploadArea.style.background = '';
+            uploadArea.style.borderColor = '#3498db';
+            
+            if (e.dataTransfer.files.length) {
+                const file = e.dataTransfer.files[0];
+                if (file.type.startsWith('video/')) {
+                    loadVideo(file);
+                } else {
+                    alert('请选择视频文件（MP4, AVI, MOV, WebM等格式）');
+                }
+            }
+        }
+        
+        function handleFileSelect(e) {
+            if (e.target.files.length) {
+                loadVideo(e.target.files[0]);
+            }
+        }
+        
+        function loadVideo(file) {
+            // 检查文件大小
+            if (file.size > 100 * 1024 * 1024) {
+                alert('文件大小不能超过100MB');
+                return;
+            }
+            
+            videoFile = file;
+            videoFileName = file.name;
+            videoFileSize = file.size;
+            
+            // 显示文件信息
+            document.getElementById('fileInfo').style.display = 'block';
+            document.getElementById('fileName').textContent = videoFileName;
+            document.getElementById('fileSize').textContent = formatFileSize(videoFileSize);
+            
+            const url = URL.createObjectURL(file);
+            videoElement.src = url;
+            videoElement.style.display = 'block';
+            
+            // 隐藏视频占位符
+            document.getElementById('videoPlaceholder').style.display = 'none';
+            
+            // 重置时间标记
+            startTime = 0;
+            endTime = 0;
+            updateTimeMarkers();
+            
+            // 启用转换按钮
+            convertBtn.disabled = false;
+            
+            // 重置输出区域
+            resetOutput();
+            
+            console.log('视频文件加载成功:', videoFileName);
+        }
+        
+        // ==================== 视频处理函数 ====================
+        function onVideoLoaded() {
+            videoDuration = videoElement.duration;
+            isVideoLoaded = true;
+            
+            // 初始化结束时间为视频时长或30秒，取较小值
+            endTime = Math.min(30, videoDuration);
+            
+            // 更新标记显示
+            updateTimeMarkers();
+            
+            // 显示当前时间
+            currentTimeDisplay.style.display = 'block';
+            
+            // 启用帧控制按钮
+            prevFrameBtn.disabled = false;
+            nextFrameBtn.disabled = false;
+            
+            // 更新大小估算
+            updateSizeEstimate();
+            
+            console.log('视频元数据加载完成，时长:', formatTime(videoDuration));
+        }
+        
+        function updateCurrentTime() {
+            if (!isVideoLoaded) return;
+            
+            const current = videoElement.currentTime;
+            currentTime.textContent = formatTime(current);
+        }
+        
+        function markTime(type) {
+            if (!isVideoLoaded) {
+                alert('请先上传并加载视频文件');
+                return;
+            }
+            
+            const current = videoElement.currentTime;
+            
+            if (type === 'start') {
+                startTime = current;
+                if (startTime > endTime && endTime > 0) {
+                    endTime = Math.min(startTime + 5, videoDuration);
+                }
+            } else {
+                endTime = current;
+                if (endTime < startTime) {
+                    startTime = Math.max(endTime - 5, 0);
+                }
+            }
+            
+            updateTimeMarkers();
+            updateSizeEstimate();
+        }
+        
+        function moveFrame(direction) {
+            if (!isVideoLoaded) return;
+            
+            // 假设帧率为30fps，每帧约0.033秒
+            const frameDuration = 1 / videoFrameRate;
+            const current = videoElement.currentTime;
+            videoElement.currentTime = current + (direction * frameDuration);
+        }
+        
+        // ==================== 显示更新函数 ====================
+        function updateTimeMarkers() {
+            startTimeMarker.textContent = formatTime(startTime);
+            endTimeMarker.textContent = formatTime(endTime);
+            
+            const duration = endTime - startTime;
+            durationMarker.textContent = duration > 0 ? duration.toFixed(3) + '秒' : '0.000秒';
+        }
+        
+        function updateFadeDisplay() {
+            outputFade.textContent = `${settings.fadeInFrames}帧/${settings.fadeOutFrames}帧`;
+        }
+        
+        function updateQualityDisplay() {
+            // 更新质量标记位置
+            const percent = (settings.quality - 1) / 99 * 100;
+            qualityMarker.style.left = `${percent}%`;
+            
+            // 更新输出质量显示
+            outputQuality.textContent = settings.quality;
+            
+            // 根据质量级别设置颜色
+            let color;
+            if (settings.quality <= 30) {
+                color = '#e74c3c';
+            } else if (settings.quality <= 70) {
+                color = '#f39c12';
+            } else {
+                color = '#2ecc71';
+            }
+            qualityValue.style.color = color;
+        }
+        
+        function updateSizeEstimate() {
+            if (!isVideoLoaded) {
+                sizeEstimate.textContent = '--';
+                sizeWarningText.style.display = 'none';
+                sizeEstimateWarning.textContent = '';
+                return;
+            }
+            
+            const duration = endTime - startTime;
+            if (duration <= 0) {
+                sizeEstimate.textContent = '--';
+                sizeWarningText.style.display = 'none';
+                sizeEstimateWarning.textContent = '';
+                return;
+            }
+            
+            // 更精确的文件大小估算算法
+            let estimatedSize;
+            
+            if (settings.format === 'gif') {
+                // GIF: 基于分辨率、帧率、时长和颜色数的估算
+                const fps = Math.round(5 + (settings.quality / 100) * 15); // 5-20fps
+                const colors = Math.round(32 + (settings.quality / 100) * 224); // 32-256色
+                const resolution = settings.width * settings.height;
+                
+                // GIF估算公式: 每像素每帧约0.1-0.3字节，乘以颜色复杂度因子
+                const baseBytesPerPixelPerFrame = 0.15 + (settings.quality / 100) * 0.15;
+                const totalFrames = Math.ceil(duration * fps);
+                estimatedSize = resolution * totalFrames * baseBytesPerPixelPerFrame * (colors / 256);
+            } else {
+                // WebP: 基于分辨率、时长和质量的估算
+                const resolution = settings.width * settings.height;
+                // WebP估算公式: 每像素约0.05-0.2字节，乘以质量因子
+                const baseBytesPerPixel = 0.05 + (settings.quality / 100) * 0.15;
+                estimatedSize = resolution * duration * 30 * baseBytesPerPixel; // 假设30fps
+            }
+            
+            // 转换为MB
+            estimatedSize = estimatedSize / (1024 * 1024);
+            
+            // 显示估算大小（保留2位小数）
+            sizeEstimate.textContent = estimatedSize.toFixed(2) + ' MB';
+            
+            // 添加估算精度提示
+            sizeEstimateWarning.textContent = '（估算值，实际测试该估算完全没用，哈哈）';
+            
+            // 如果接近限制，显示警告
+            if (estimatedSize > 15) {
+                sizeWarningText.style.display = 'inline';
+                sizeWarningText.style.color = estimatedSize > 18 ? '#e74c3c' : '#f39c12';
+            } else {
+                sizeWarningText.style.display = 'none';
+            }
+        }
+        
+        function setFormat(format) {
+            settings.format = format;
+            
+            // 更新按钮状态
+            formatGif.classList.remove('active');
+            formatWebp.classList.remove('active');
+            
+            if (format === 'gif') {
+                formatGif.classList.add('active');
+                outputFormat.textContent = 'GIF';
+                downloadBtn.download = settings.customFilename ? 
+                    `${settings.customFilename}.gif` : 'converted.gif';
+            } else {
+                formatWebp.classList.add('active');
+                outputFormat.textContent = 'WebP';
+                downloadBtn.download = settings.customFilename ? 
+                    `${settings.customFilename}.webp` : 'converted.webp';
+            }
+            
+            // 更新大小估算
+            updateSizeEstimate();
+        }
+        
+        // ==================== 转换函数 ====================
+        async function convertVideo() {
+            // 验证时间选择
+            if (endTime <= startTime) {
+                alert('请选择有效的开始和结束时间（结束时间必须大于开始时间）');
+                return;
+            }
+            
+            if (!videoFile) {
+                alert('请先上传视频文件');
+                return;
+            }
+            
+            // 验证文件名（如果有）
+            if (settings.customFilename) {
+                // 检查文件名是否包含非法字符
+                const illegalChars = /[<>:"/\\|?*\x00-\x1F]/g;
+                if (illegalChars.test(settings.customFilename)) {
+                    alert('文件名包含非法字符，请使用字母、数字、汉字、下划线等');
+                    return;
+                }
+            }
+            
+            // 显示处理中
+            processing.style.display = 'block';
+            progressContainer.style.display = 'block';
+            convertBtn.disabled = true;
+            
+            // 获取选中的时长
+            const duration = endTime - startTime;
+            
+            // 创建FormData
+            const formData = new FormData();
+            formData.append('video', videoFile);
+            formData.append('startTime', startTime.toFixed(3));
+            formData.append('endTime', endTime.toFixed(3));
+            formData.append('fadeInFrames', settings.fadeInFrames);
+            formData.append('fadeOutFrames', settings.fadeOutFrames);
+            formData.append('quality', settings.quality);
+            formData.append('format', settings.format);
+            formData.append('customFilename', settings.customFilename);
+            
+            try {
+                // 发送请求到后端
+                const response = await fetch('/convert', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`服务器错误: ${response.status}`);
+                }
+                
+                // 解析响应
+                const result = await response.json();
+                
+                if (result.success) {
+                    // 显示结果
+                    showConversionResult(result);
+                } else {
+                    throw new Error(`转换失败: ${result.error}`);
+                }
+            } catch (error) {
+                alert(`转换过程中发生错误: ${error.message}`);
+                console.error('转换错误:', error);
+            } finally {
+                // 隐藏处理中
+                processing.style.display = 'none';
+                progressContainer.style.display = 'none';
+                progressBar.style.width = '0%';
+                progressBar.textContent = '0%';
+                convertBtn.disabled = false;
+                
+                // 更新系统信息
+                updateSystemInfo();
+            }
+        }
+        
+        function showConversionResult(result) {
+            // 显示输出图片
+            outputImage.src = result.downloadUrl;
+            outputImage.style.display = 'block';
+            outputPlaceholder.style.display = 'none';
+            
+            // 更新输出信息
+            outputSize.textContent = formatFileSize(result.fileSize);
+            outputDimensions.textContent = `${settings.width} × ${settings.height}`;
+            
+            // 设置下载链接
+            downloadBtn.href = result.downloadUrl;
+            downloadBtn.style.display = 'flex';
+            
+            // 检查文件大小警告
+            if (result.message && result.message.includes('优化')) {
+                sizeWarning.style.display = 'flex';
+            } else {
+                sizeWarning.style.display = 'none';
+            }
+            
+            // 如果文件大小超过限制，显示警告
+            if (result.fileSize > settings.maxSize) {
+                sizeWarning.style.display = 'flex';
+            }
+            
+            console.log('转换成功:', result);
+        }
+        
+        // ==================== 系统管理函数 ====================
+        async function cleanupTempFiles() {
+            if (!confirm('确定要清理所有临时文件吗？这不会影响已下载的文件。')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/cleanup', {
+                    method: 'POST'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(`清理完成: ${result.message}`);
+                    updateSystemInfo();
+                } else {
+                    alert(`清理失败: ${result.error}`);
+                }
+            } catch (error) {
+                alert(`清理过程中发生错误: ${error.message}`);
+                console.error('清理错误:', error);
+            }
+        }
+        
+        async function updateSystemInfo() {
+            try {
+                const response = await fetch('/system-info');
+                const data = await response.json();
+                
+                cleanupStatus.textContent = '已启用（每小时自动清理）';
+                uploadFolderStatus.textContent = data.uploadDir;
+                
+                // 显示系统信息区域
+                systemInfo.style.display = 'block';
+            } catch (error) {
+                console.log('无法获取系统信息，后端可能不支持此功能');
+                cleanupStatus.textContent = '无法获取状态';
+                uploadFolderStatus.textContent = '未知';
+                systemInfo.style.display = 'block';
+            }
+        }
+        
+        // ==================== 辅助函数 ====================
+        function resetOutput() {
+            outputImage.style.display = 'none';
+            outputPlaceholder.style.display = 'flex';
+            downloadBtn.style.display = 'none';
+            sizeWarning.style.display = 'none';
+            outputSize.textContent = '0 KB';
+        }
+        
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            const millis = Math.floor((seconds - Math.floor(seconds)) * 1000);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}.${millis.toString().padStart(3, '0')}`;
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        // 模拟进度更新
+        function updateProgress(percent) {
+            progressBar.style.width = percent + '%';
+            progressBar.textContent = percent + '%';
+            processingDetails.textContent = `处理进度: ${percent}%`;
+        }
+        
+        // ==================== 初始化程序 ====================
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', init);
+        
+        // 全局导出（如果需要）
+        window.videoConverter = {
+            settings,
+            loadVideo,
+            convertVideo,
+            cleanupTempFiles,
+            formatTime,
+            formatFileSize
+        };
+    </script>
+</body>
+</html>
