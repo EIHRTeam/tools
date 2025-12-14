@@ -24,6 +24,10 @@ AKA 批量图片尺寸转换工具<br>
 一个经过迭代的视频转gif/webp转换器，用于将单个视频转化为可调节大小的gif/webp格式。<br>
 由 [oculto](https://github.com/oculto-link) 编写。
 
+### [mission-tool](mission-tool/)
+任务转换工具<br>
+使用现有的文本文件转换为可使用的任务描述文件<br>
+
 ## 废弃工具
 
 ### [video-converter](video-converter/)
