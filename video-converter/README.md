@@ -1,3 +1,6 @@
+## 🚨注意！！！该文件由于使用难度较大，已简化，请前往[video-converter-python](https://github.com/EIHRTeam/tools/tree/main/video-converter-python)使用新版本。该版本留以备用。
+ 
+ 
  ### 🎬 神奇妙妙小工具 - 视频转GIF/WebP转换器
 
 一个功能强大、简单易用的视频转GIF/WebP在线转换工具，支持高质量输出、精确时间选择和自动文件优化！🎉
