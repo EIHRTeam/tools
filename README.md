@@ -26,7 +26,7 @@ AKA 批量图片尺寸转换工具<br>
 
 ### [mission-tool](mission-tool/)
 任务转换工具<br>
-使用现有的文本文件转换为可使用的任务描述文件<br>
+使用现有的文本文件转换为可使用的任务描述文件，使用时需要填入输出路径和现有的文本文件路径<br>
 由 [H_Tian](https://github.com/HTian-qwq) 编写。
 
 ## 废弃工具
