@@ -1,112 +1,75 @@
-name: Auto Package and Release
+name: Auto Pack and Release
 
+# 触发条件配置
 on:
+  # 1. 当有代码推送到 main 分支时自动触发
   push:
+    branches:
+      - main  # 如果你的主分支叫 master，请修改这里
+    paths:
+      - '**'  # 监听所有文件变化
+
+  # 2. 允许手动触发 (在 GitHub Actions 页面点击 Run workflow)
   workflow_dispatch:
+    inputs:
+      release_body:
+        description: 'Release 内容描述 (可选)'
+        required: false
+        default: 'Auto-generated release from GitHub Actions'
+
+# 权限配置：需要写入权限来创建 Release
+permissions:
+  contents: write
 
 jobs:
-  package-and-release:
+  build-and-release:
     runs-on: ubuntu-latest
-    env:
-      TAG_NAME: auto-release-${{ github.run_id }}
-      RELEASE_NAME: Auto release ${{ github.run_id }}
+
     steps:
-      - name: Checkout
+      # 第一步：检出代码
+      - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Detect added files
-        id: detect
+      # 第二步：打包所有子目录
+      - name: Zip Subdirectories
         run: |
-          if [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
-            RANGE="${{ github.sha }}"
-          else
-            RANGE="${{ github.event.before }}..${{ github.sha }}"
-          fi
-          echo "Diff range: $RANGE"
-          ADDED=$(git diff --name-status $RANGE | awk '$1=="A"{print $2; exit}')
-          if [ -n "$ADDED" ]; then
-            echo "has_added=true" >> $GITHUB_OUTPUT
-          else
-            echo "has_added=false" >> $GITHUB_OUTPUT
-          fi
+          # 创建一个临时目录存放 zip 文件
+          mkdir -p release_artifacts
 
-      - name: Stop if no added files
-        if: steps.detect.outputs.has_added == 'false'
-        run: |
-          echo "No added files in this push. Exiting."
-          exit 0
-
-      - name: Package root subdirectories
-        id: package
-        run: |
-          mkdir -p $GITHUB_WORKSPACE/zips
-          ZIPS=""
-          for d in */ ; do
-            if [ -d "$d" ]; then
-              dirname=${d%/}
-              if [ "$dirname" = ".github" ]; then
-                continue
-              fi
-              zip -r "$GITHUB_WORKSPACE/zips/${dirname}.zip" "$dirname" -x "*/.git/*"
-              ZIPS="$ZIPS $GITHUB_WORKSPACE/zips/${dirname}.zip"
-            fi
+          # 遍历当前目录下的所有子目录
+          # find . -maxdepth 1 -mindepth 1 -type d: 查找当前层级下的目录
+          # -not -path '*/.*': 排除隐藏目录 (如 .git)
+          # grep -v '^\./\.github': 排除 .github 目录
+          
+          find . -maxdepth 1 -mindepth 1 -type d -not -path '*/.*' | grep -v '^\./\.github' | while read dir; do
+            dirname=$(basename "$dir")
+            echo "正在打包目录: $dirname"
+            
+            # 将目录打包为 zip，存放在 release_artifacts 文件夹中
+            zip -r "release_artifacts/${dirname}.zip" "$dirname"
           done
-          echo "zips<<EOF" >> $GITHUB_OUTPUT
-          echo "$ZIPS" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Read release notes if present
-        id: notes
+          echo "打包完成，文件列表如下："
+          ls -l release_artifacts/
+
+      # 第三步：生成 Release 的标签名 (使用时间戳，避免重复)
+      - name: Generate Release Tag
+        id: tag
         run: |
-          if [ -f RELEASE_NOTES.md ]; then
-            echo "body<<EOF" >> $GITHUB_OUTPUT
-            cat RELEASE_NOTES.md >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
-          else
-            echo "body<<EOF" >> $GITHUB_OUTPUT
-            echo "Auto release created by workflow." >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
-          fi
+          # 生成格式如: release-20231027-143000
+          echo "release_tag=release-$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_OUTPUT
 
-      - name: Create release and upload assets
-        uses: actions/github-script@v6
+      # 第四步：创建 Release 并上传文件
+      - name: Create Release and Upload Assets
+        uses: softprops/action-gh-release@v1
         with:
-          script: |
-            const fs = require('fs');
-            const path = require('path');
-            const zips = (process.env.ZIPS || '').trim();
-            const zipList = zips ? zips.split(/\s+/) : [];
-            const body = process.env.RELEASE_BODY || '';
-            const tag = process.env.TAG_NAME || `auto-release-${process.env.GITHUB_RUN_ID}`;
-            const name = process.env.RELEASE_NAME || tag;
-            const release = await github.repos.createRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              tag_name: tag,
-              name: name,
-              body: body,
-              draft: false,
-              prerelease: false,
-            });
-            for (const filePath of zipList){
-              if(!filePath) continue;
-              const content = fs.readFileSync(filePath);
-              const fname = path.basename(filePath);
-              await github.repos.uploadReleaseAsset({
-                url: release.data.upload_url,
-                headers: {
-                  "content-type": "application/zip",
-                  "content-length": content.length
-                },
-                name: fname,
-                data: content
-              });
-            }
+          tag_name: ${{ steps.tag.outputs.release_tag }}
+          name: Release ${{ steps.tag.outputs.release_tag }}
+          # 如果是手动触发，使用输入的描述；如果是自动触发，使用默认描述
+          body: ${{ github.event.inputs.release_body || 'New content detected. Auto-packaged release.' }}
+          draft: false
+          prerelease: false
+          # 上传 release_artifacts 目录下的所有 zip 文件
+          files: release_artifacts/*.zip
         env:
-          ZIPS: ${{ steps.package.outputs.zips }}
-          RELEASE_BODY: ${{ steps.notes.outputs.body }}
-          TAG_NAME: ${{ env.TAG_NAME }}
-          RELEASE_NAME: ${{ env.RELEASE_NAME }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
