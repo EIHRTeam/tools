@@ -1,15 +1,11 @@
-name: Auto Pack and Release
+name: Auto Zip Subdirectories and Release
 
-# 触发条件配置
 on:
-  # 1. 当有代码推送到 main 分支时自动触发
   push:
     branches:
-      - main  # 如果你的主分支叫 master，请修改这里
+      - main
     paths:
-      - '**'  # 监听所有文件变化
-
-  # 2. 允许手动触发 (在 GitHub Actions 页面点击 Run workflow)
+      - '**'
   workflow_dispatch:
     inputs:
       release_body:
@@ -17,7 +13,6 @@ on:
         required: false
         default: 'Auto-generated release from GitHub Actions'
 
-# 权限配置：需要写入权限来创建 Release
 permissions:
   contents: write
 
@@ -26,50 +21,101 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 第一步：检出代码
+      # 1. 检出代码 (设置 fetch-depth: 0 以便获取完整的 git 历史用于对比差异)
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      # 第二步：打包所有子目录
-      - name: Zip Subdirectories
-        run: |
-          # 创建一个临时目录存放 zip 文件
-          mkdir -p release_artifacts
-
-          # 遍历当前目录下的所有子目录
-          # find . -maxdepth 1 -mindepth 1 -type d: 查找当前层级下的目录
-          # -not -path '*/.*': 排除隐藏目录 (如 .git)
-          # grep -v '^\./\.github': 排除 .github 目录
-          
-          find . -maxdepth 1 -mindepth 1 -type d -not -path '*/.*' | grep -v '^\./\.github' | while read dir; do
-            dirname=$(basename "$dir")
-            echo "正在打包目录: $dirname"
-            
-            # 将目录打包为 zip，存放在 release_artifacts 文件夹中
-            zip -r "release_artifacts/${dirname}.zip" "$dirname"
-          done
-
-          echo "打包完成，文件列表如下："
-          ls -l release_artifacts/
-
-      # 第三步：生成 Release 的标签名 (使用时间戳，避免重复)
+      # 2. 生成 Release 标签 (核心逻辑修改)
       - name: Generate Release Tag
         id: tag
         run: |
-          # 生成格式如: release-20231027-143000
-          echo "release_tag=release-$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_OUTPUT
+          # --- 默认逻辑：使用时间戳 ---
+          DEFAULT_TAG="release-$(date +'%Y%m%d-%H%M%S')"
+          FINAL_TAG=$DEFAULT_TAG
+          IS_NEW_DIR=false
 
-      # 第四步：创建 Release 并上传文件
+          # --- 检测是否有新目录创建 ---
+          # 获取上一个 commit 的 hash，处理首次 commit 的情况
+          if git rev-parse HEAD^ >/dev/null 2>&1; then
+            PREV_COMMIT="HEAD^"
+          else
+            echo "Initial commit detected, skipping diff."
+            PREV_COMMIT="4b825dc642cb6eb9a060e54bf8d69288fbee4904" # git 空树 hash
+          fi
+
+          # 获取当前存在的所有目录 (排除 .git, .github, discarded)
+          # 注意：这里只列出根目录下的文件夹名
+          CURRENT_DIRS=$(find . -maxdepth 1 -mindepth 1 -type d -not -path '*/.*' | sed 's|^\./||' | grep -v '^discarded$' | grep -v '^\.github$' | sort)
+          
+          # 获取上一个 commit 时的目录列表
+          PREV_DIRS=$(git ls-tree -d --name-only $PREV_COMMIT | grep -v '^discarded$' | grep -v '^\.github$' | sort)
+
+          # 对比找出新增的目录
+          # comm -23: 只显示在 file1 (Current) 中出现但不在 file2 (Prev) 中出现的行
+          NEW_DIRS=$(comm -23 <(echo "$CURRENT_DIRS") <(echo "$PREV_DIRS"))
+
+          if [ ! -z "$NEW_DIRS" ]; then
+            echo "检测到新目录创建: $NEW_DIRS"
+            IS_NEW_DIR=true
+          else
+            echo "未检测到新目录创建。"
+          fi
+
+          # --- 如果有新目录，计算版本号 ---
+          if [ "$IS_NEW_DIR" = true ]; then
+            # 获取最近的一个符合 x.y.z 格式的 tag (例如 1.0.1)
+            # 2>/dev/null 忽略没有 tag 时的报错
+            LATEST_VERSION=$(git describe --tags --match "[0-9]*.[0-9]*.[0-9]*" --abbrev=0 2>/dev/null || echo "")
+
+            if [ -z "$LATEST_VERSION" ]; then
+              # 如果没有找到版本号 tag，初始化为 1.0.0
+              FINAL_TAG="1.0.0"
+            else
+              # 解析版本号 (假设格式为 X.Y.Z)
+              # 如果 tag 带 'v' 前缀 (如 v1.0.1)，这里需要去除，如果不带则直接用
+              VERSION_NO_V=${LATEST_VERSION#v}
+              
+              IFS='.' read -r -a parts <<< "$VERSION_NO_V"
+              major=${parts[0]}
+              minor=${parts[1]}
+              patch=${parts[2]}
+              
+              # Patch 版本号 +1
+              new_patch=$((patch + 1))
+              FINAL_TAG="${major}.${minor}.${new_patch}"
+            fi
+            echo "检测到新目录，切换 Release 标签为版本号模式: $FINAL_TAG"
+          fi
+
+          # 输出最终决定的 tag 到环境变量
+          echo "release_tag=$FINAL_TAG" >> $GITHUB_OUTPUT
+
+      # 3. 打包所有子目录
+      - name: Zip Subdirectories
+        run: |
+          mkdir -p release_artifacts
+
+          # 遍历目录，增加 grep -v '^\./discarded$' 来排除 discarded 目录
+          find . -maxdepth 1 -mindepth 1 -type d -not -path '*/.*' | grep -v '^\./\.github' | grep -v '^\./discarded$' | while read dir; do
+            dirname=$(basename "$dir")
+            echo "正在打包目录: $dirname"
+            zip -r "release_artifacts/${dirname}.zip" "$dirname"
+          done
+
+          echo "打包完成，准备发布..."
+          ls -l release_artifacts/
+
+      # 4. 创建 Release 并上传文件
       - name: Create Release and Upload Assets
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ steps.tag.outputs.release_tag }}
           name: Release ${{ steps.tag.outputs.release_tag }}
-          # 如果是手动触发，使用输入的描述；如果是自动触发，使用默认描述
-          body: ${{ github.event.inputs.release_body || 'New content detected. Auto-packaged release.' }}
+          body: ${{ github.event.inputs.release_body || 'Auto-packaged release.' }}
           draft: false
           prerelease: false
-          # 上传 release_artifacts 目录下的所有 zip 文件
           files: release_artifacts/*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
