@@ -31,7 +31,7 @@ AKA 批量图片尺寸转换工具<br>
 
 ## 废弃工具
 
-### [video-converter](video-converter/)
+### [video-converter](discarded/video-converter/)
 视频转GIF/WebP转换器<br>
 该工具使用难度过大，已进行简化，请使用上方video-converter-python工具。<br>
 由 [oculto](https://github.com/oculto-link) 编写。
