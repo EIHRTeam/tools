@@ -43,9 +43,7 @@ pip install Pillow -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 3、 获取程序
 
-从GitHub下载 image_resizer.py 文件
-
-或下载整个项目ZIP包后解压
+从 Release 下载最新版的 [Image-resizer-tool.zip](https://github.com/EIHRTeam/tools/releases/latest/download/Image-resizer-tool.zip)
 
 ## 🚀 使用方法
 第一次运行：
