@@ -1,4 +1,4 @@
-name: Auto Zip Subdirectories and Release
+name: Auto Release
 
 on:
   push:
