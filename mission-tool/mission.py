@@ -5,8 +5,8 @@ import shutil
 import glob
 from collections import defaultdict
 
-BASE_DIR = ""
-OUTPUT_ROOT = ""
+BASE_DIR = "endfielddata"
+OUTPUT_ROOT = "Mission"
 
 FILES = {
     "mission_data":   os.path.join(BASE_DIR, "TableCfg/MissionDataTable.json"),
