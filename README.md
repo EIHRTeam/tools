@@ -30,7 +30,7 @@ AKA 批量图片尺寸转换工具<br>
 使用现有的文本文件转换为可使用的任务描述文件，使用时需要填入输出路径和现有的文本文件路径<br>
 由 [H_Tian](https://github.com/HTian-qwq) 编写。
 
-### [image-croppingl](image-cropping/)
+### [image-croppingl](image-cropping-tool/)
 半身图裁剪工具<br>
 使用现有清晰较低的半身图作为模板匹配高清立绘图后，从中裁剪出适合的大小。<br>
 由 [H_Tian](https://github.com/HTian-qwq) 编写。
