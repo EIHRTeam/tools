@@ -35,6 +35,11 @@ AKA 批量图片尺寸转换工具<br>
 使用现有清晰较低的半身图作为模板匹配高清立绘图后，从中裁剪出适合的大小。<br>
 由 [H_Tian](https://github.com/HTian-qwq) 编写。
 
+### [matrix-icon-tool](matrix-icon-tool/)
+基质图标生成工具<br>
+这是一个自动化工具，用于合成基质图标。<br>
+由 [ZhuLuOT](https://github.com/ZhuLuOT) 编写。 
+
 ## 废弃工具
 
 ### [video-converter](discarded/video-converter/)
