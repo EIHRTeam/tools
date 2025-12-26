@@ -6,7 +6,6 @@
 
 - 将base文件夹中的每张底图与icon文件夹中的每张图标图片进行叠加组合
 - 生成的图片保存在output文件夹中
-- 特殊处理：对于命名为"四级基质.png"和"五级基质.png"的图片，图标会在居中位置基础上进行微调
 
 ## 目录结构
 
@@ -39,14 +38,6 @@ python merge_images.py
 
 4. 生成的图片将保存在`output`文件夹中，文件名格式为：`底图名称_图标名称.png`
 
-## 特殊处理逻辑
-
-对于底图为"四级基质.png"和"五级基质.png"的情况，图标位置会在默认居中位置基础上进行调整：
-- X轴：增加5px
-- Y轴：减少4px
-
-这种调整是为了确保在这些特定底图上图标位置更加合适。
-
 ## 注意事项
 
 1. 确保底图和图标图片都是PNG格式
@@ -60,21 +51,21 @@ python merge_images.py
 
 ```
 base/
-├── background1.png
-├── 四级基质.png
+├── 1.png
+├── 2.png
 icon/
-├── logo1.png
-├── logo2.png
+├── 5.png
+├── 6.png
 ```
 
 运行脚本后，output文件夹将包含：
 ```
 output/
-├── background1_logo1.png
-├── background1_logo2.png
-├── 四级基质_logo1.png
-├── 四级基质_logo2.png
+├── 1_5.png
+├── 2_5.png
+├── 1_6.png
+├── 2_6.png
 ```
 
-其中，"四级基质_logo1.png"和"四级基质_logo2.png"中的图标位置会进行特殊调整。
+
 
