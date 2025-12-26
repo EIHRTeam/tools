@@ -27,10 +27,10 @@ for base_file in base_files:
         default_x = (base_width - icon_width) // 2
         default_y = (base_height - icon_height) // 2
 
-        if base_filename in ['四级基质.png', '五级基质.png']:
-            position = (default_x + 5, default_y - 4)
+        if base_filename in ['3.png', '4.png']:
+            position = (default_x + 62, default_y - 27 )
         else:
-            position = (default_x, default_y)
+            position = (default_x + 50, default_y - 10)
 
         result_image = Image.new('RGBA', (base_width, base_height), (0, 0, 0, 0))
         result_image.paste(base_image, (0, 0))
