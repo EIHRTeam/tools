@@ -1,5 +1,8 @@
 # tools
-[![Auto Release](https://github.com/EIHRTeam/tools/actions/workflows/auto-package-release.yml/badge.svg)](https://github.com/EIHRTeam/tools/actions/workflows/auto-package-release.yml)<br>
+[![Auto Release](https://github.com/EIHRTeam/tools/actions/workflows/auto-package-release.yml/badge.svg)](https://github.com/EIHRTeam/tools/actions/workflows/auto-package-release.yml)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/EIHRTeam/tools/total)
+![GitHub License](https://img.shields.io/github/license/EIHRTeam/tools)
+<br>
 一些神奇妙妙小工具
 
 ## 下载
